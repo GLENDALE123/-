@@ -49,11 +49,11 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         APIConnector apiConnector = new APIConnector();
-        apiConnector.connect(1);/*
+        apiConnector.connect(1);
 
         if (!isPermission) {
             callPermission();
-        }*/
+        }
 
         gps = new GPSUtil(MainActivity.this);
         // GPS 사용유무 가져오기
