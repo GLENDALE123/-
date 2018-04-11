@@ -8,7 +8,7 @@
     tools:context=".MainActivity"
     tools:showIn="@layout/app_bar_main">
 
-    <LinearLayout
+    <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="top"
@@ -16,47 +16,69 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="parent">
-
+        <!--미세먼지 표정아이콘-->
         <ImageView
-            android:src="@drawable/smile"
+            android:id="@+id/poulic"
             android:layout_width="match_parent"
-            android:layout_marginTop="100dp"
+            android:layout_height="130dp"
+            android:layout_gravity="center"
+            android:layout_marginBottom="35dp"
+            android:src="@drawable/smile"
+            app:layout_constraintBottom_toBottomOf="@id/progressBar"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent" />
+        <!--미세먼지 표시상태바        -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="200dp"
             android:layout_height="200dp"
-            android:layout_gravity="center"/>
-
+            android:background="@drawable/circle_shape"
+            android:indeterminate="false"
+            android:max="150"
+            android:progress="100"
+            android:progressDrawable="@drawable/customprogessbar"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+        <!--오염 텍스트-->
         <TextView
+            android:id="@+id/poultt"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:textSize="40sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/white"
+            app:layout_constraintTop_toBottomOf="@id/progressBar"
             android:gravity="center"
-            android:text="좋 음" />
+            android:text="좋 음"
+            android:textColor="@android:color/white"
+            android:textSize="40sp"
+            android:textStyle="bold" />
 
         <View
+            android:id="@+id/divibar"
+            app:layout_constraintTop_toBottomOf="@id/poultt"
             android:layout_width="match_parent"
             android:layout_height="13dp"
             android:background="#ffffff" />
 
         <View
+            app:layout_constraintTop_toBottomOf="@id/divibar"
+            android:id="@+id/contentsmain"
             android:layout_width="match_parent"
             android:layout_height="350dp" />
 
         <View
+            android:id="@+id/divibar2"
+            app:layout_constraintTop_toBottomOf="@id/contentsmain"
             android:layout_width="match_parent"
             android:layout_height="13dp"
             android:background="#ffffff" />
 
         <View
+            android:id="@+id/contentsmain2"
+            app:layout_constraintTop_toBottomOf="@id/divibar2"
             android:layout_width="match_parent"
             android:layout_height="350dp" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="13dp"
-            android:background="#ffffff" />
-
-    </LinearLayout>
+    </android.support.constraint.ConstraintLayout>
 
 </android.support.v4.widget.NestedScrollView>
