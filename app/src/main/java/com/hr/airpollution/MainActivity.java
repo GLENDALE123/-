@@ -1,9 +1,11 @@
 package com.hr.airpollution;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -15,6 +17,20 @@ import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
+
+import com.google.firebase.messaging.FirebaseMessaging;
+
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -32,25 +48,29 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             Window w = getWindow(); // in Activity's onCreate() for instance
             w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+
+        /////////// API 통신 /////////////////
         APIConnector apiConnector = new APIConnector();
         apiConnector.connect(1);
+        //////////////////////////////////////
 
+        ////////// GPS 관련 ////////////////////
         if (!isPermission) {
             callPermission();
         }
@@ -70,11 +90,42 @@ public class MainActivity extends AppCompatActivity
             // GPS 를 사용할수 없으므로
             gps.showSettingsAlert();
         }
+        ////////////////////////
+
+        ////// 푸시 관련 ///////
+        FirebaseMessaging.getInstance().subscribeToTopic("notice"); // 여기서 notice를 구독시킴
+        final String url = "https://fcm.googleapis.com/fcm/send";
+        final String parameters = "{" +
+                "\"data\": {" +
+                "\"message\": {" +
+                "\"content\": \"먼지가 너무 많아요!! ㅠ.ㅠ\"" +
+                "}" +
+                "}," +
+                "\"to\": \"/topics/notice\"" +
+                "}";
+        // /topics/notice로 보냄. (to에 디바이스 토큰을 이용하는 방법도 있음.)
+
+        try {
+            new Thread() {
+                public void run() {
+                    try {
+                        String result = sendPost(url, parameters);
+                        System.out.println("푸시결과:" + result);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }.start();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        ////////////////////////
     }
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -124,13 +175,13 @@ public class MainActivity extends AppCompatActivity
 
         }
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == PERMISSIONS_ACCESS_FINE_LOCATION
                 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             isAccessFineLocation = true;
@@ -143,7 +194,61 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    // 권한 요청
+    public String sendPost(String url, String parameters) throws Exception {
+        TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
+            @SuppressLint("TrustAllX509TrustManager")
+            @Override
+            public void checkClientTrusted(X509Certificate[] x509Certificates, String s) {
+            }
+
+            @SuppressLint("TrustAllX509TrustManager")
+            @Override
+            public void checkServerTrusted(X509Certificate[] x509Certificates, String s) {
+            }
+
+            public X509Certificate[] getAcceptedIssuers() {
+                return new X509Certificate[0];
+            }
+        }};
+        SSLContext sc = SSLContext.getInstance("TLS");
+        sc.init(null, trustAllCerts, new SecureRandom());
+        HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+
+        URL obj = new URL(url);
+        HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
+
+        //reuqest header
+        con.setRequestMethod("POST");
+        con.setRequestProperty("Content-Type", "application/json");
+        con.setRequestProperty("Authorization", "key=AAAA8E4-YGk:APA91bG2Pz3-2Nw7pCLjeIe3cWW-DXcMwu0LsNhk6G0uGB6xNZoRXfnKi_R6PVEnoUZzqkp85QqCxLN6v9wfkcVZ_Ua5B2lnmPldQqqzoQdY6gCA6Jelt5E5rkkejHES3EXvg_NcFs-O");
+
+        //post request
+        con.setDoOutput(true);
+        DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+        wr.write(parameters.getBytes("UTF-8"));
+        wr.flush();
+        wr.close();
+
+        int responseCode = con.getResponseCode();
+        System.out.println("Post parameters : " + parameters);
+        System.out.println("Response Code : " + responseCode);
+
+        StringBuilder response = new StringBuilder();
+
+        if (responseCode == 200) {
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+        }
+        //result
+        System.out.println(response.toString());
+        return response.toString();
+    }
+
+    // 권한 요청 (GPS)
     private void callPermission() {
         // Check the SDK version and whether the permission is already granted or not.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M

@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "1032104861801",
+    "firebase_url": "https://airpollution-200805.firebaseio.com",
+    "project_id": "airpollution-200805",
+    "storage_bucket": "airpollution-200805.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1032104861801:android:d0077de65dc50dbb",
+        "android_client_info": {
+          "package_name": "com.hr.airpollution"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1032104861801-64kpdek2of0ovgdkt177e2j2jianufds.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCk_w8_YNI1HRGK9S0acBOuqqw7F2cPirg"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
