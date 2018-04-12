@@ -5,6 +5,8 @@ import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -16,12 +18,23 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.hr.airpollution.utility.APIConnector;
+import com.hr.airpollution.utility.AddressUtil;
+import com.hr.airpollution.utility.GPSUtil;
+import com.hr.airpollution.utility.GeoPoint;
+import com.hr.airpollution.utility.GeoTrans;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.security.SecureRandom;
@@ -44,6 +57,8 @@ public class MainActivity extends AppCompatActivity
     // GPSTracker class
     private GPSUtil gps;
 
+    TextView poultt;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,11 +79,7 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-
-        /////////// API 통신 /////////////////
-        APIConnector apiConnector = new APIConnector();
-        apiConnector.connect(1);
-        //////////////////////////////////////
+        poultt = findViewById(R.id.poultt);
 
         ////////// GPS 관련 ////////////////////
         if (!isPermission) {
@@ -84,6 +95,17 @@ public class MainActivity extends AppCompatActivity
 
             Toast.makeText(getApplicationContext(), "당신의 위치 - \n위도: " + latitude + "\n경도: " + longitude,
                     Toast.LENGTH_LONG).show();
+
+            GeoPoint in_pt = new GeoPoint(longitude, latitude);
+            final GeoPoint tm_pt = GeoTrans.convert(GeoTrans.GEO, GeoTrans.TM, in_pt);
+            System.out.println("tm : xTM=" + tm_pt.getX() + ", yTM=" + tm_pt.getY());
+
+            /*
+             * 1. 가장 가까운 측정소 가져오는 API를 실행한다.
+             * 2. 1번을 기반으로 측정소에서 미세먼지 농도 측정한 결과를 가져온다.
+             */
+            getLatestObserve(tm_pt.getX(), tm_pt.getY());
+
             String address = AddressUtil.getAddress(getApplicationContext(), latitude, longitude);
             Toast.makeText(getApplicationContext(), address, Toast.LENGTH_LONG).show();
         } else {
@@ -93,6 +115,11 @@ public class MainActivity extends AppCompatActivity
         ////////////////////////
 
         ////// 푸시 관련 ///////
+        getPush();
+        ////////////////////////
+    }
+
+    private void getPush() {
         FirebaseMessaging.getInstance().subscribeToTopic("notice"); // 여기서 notice를 구독시킴
         final String url = "https://fcm.googleapis.com/fcm/send";
         final String parameters = "{" +
@@ -121,6 +148,85 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
         }
         ////////////////////////
+    }
+
+    /*
+     * 1. 가장 가까운 측정소 가져오는 API를 실행한다.
+     * 2. 1번을 기반으로 측정소에서 미세먼지 농도 측정한 결과를 가져온다.
+     */
+    private void getLatestObserve(final double tmX, final double tmY) {
+        new Thread() { // 1번
+            public void run() {
+                try {
+                    String result = APIConnector.getNearbyMsrstnList(tmX, tmY);
+                    try {
+                        JSONObject jsonObject = new JSONObject(result);
+                        JSONArray jsonArray = new JSONArray(jsonObject.get("list").toString());
+                        JSONObject jsonObject1 = new JSONObject(jsonArray.get(0).toString());
+
+                        final String nearByStationName = jsonObject1.get("stationName").toString();
+                        System.out.println("가장가까운 측정소:" + nearByStationName);
+
+                        new Thread() { // 2번
+                            public void run() {
+                                try {
+                                    String result;
+                                    result = APIConnector.getMsrstnAcctoRltmMesureDnsty(nearByStationName);
+                                    try {
+                                        JSONObject jsonObject = new JSONObject(result);
+                                        JSONArray jsonArray = new JSONArray(jsonObject.get("list").toString());
+                                        System.out.println(jsonArray);
+                                        JSONObject latestObserver = new JSONObject(jsonArray.get(0).toString());
+
+                                        int 미세먼지농도 = Integer.parseInt(latestObserver.get("pm10Value").toString());
+                                        int 미세먼지등급 = Integer.parseInt(latestObserver.get("pm10Grade").toString());
+                                        int 초미세먼지농도 = Integer.parseInt(latestObserver.get("pm25Value").toString());
+                                        int 초미세먼지등급 = Integer.parseInt(latestObserver.get("pm25Grade").toString());
+
+                                        System.out.println("가장 최근 미세먼지농도: " + 미세먼지농도);
+                                        System.out.println("가장 최근 미세먼지등급: " + 미세먼지등급);
+                                        System.out.println("가장 최근 초미세먼지농도: " + 초미세먼지농도);
+                                        System.out.println("가장 최근 초미세먼지등급: " + 초미세먼지등급);
+
+                                        result = "";
+                                        switch (미세먼지등급) {
+                                            case 1:
+                                                result = "좋 음";
+                                                break;
+                                            case 2:
+                                                result = " 보 통";
+                                                break;
+                                            case 3:
+                                                result = "나 쁨";
+                                                break;
+                                            case 4:
+                                                result = "매 우 나 쁨";
+                                                break;
+                                        }
+                                        Message message = uiHandler.obtainMessage();
+                                        message.what = 1; // 후처리 번호
+                                        message.obj = result; // 전달할 데이터
+                                        uiHandler.sendMessage(message);
+
+                                        //GRADE 값 : 1 좋음 / 2 보통 / 3 나쁨 / 4 매우나쁨
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }.start();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
     }
 
     @Override
@@ -263,6 +369,26 @@ public class MainActivity extends AppCompatActivity
                     PERMISSIONS_ACCESS_COARSE_LOCATION);
         } else {
             isPermission = true;
+        }
+    }
+
+    private final UIHandler uiHandler = new UIHandler();
+
+    @SuppressLint("HandlerLeak")
+    private class UIHandler extends Handler {
+
+        UIHandler() {
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            // 전달받은 what(후처리 번호), obj(데이터)를 토대로 UI 작업을 한다.
+
+            switch (msg.what) { // what ID 값에 따른 UI 후처리
+                case 1: // getObserve(tmX, tmY)
+                    poultt.setText(msg.obj.toString());
+                    break;
+            }
         }
     }
 }

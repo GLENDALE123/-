@@ -1,4 +1,4 @@
-package com.hr.airpollution;
+package com.hr.airpollution.push;
 
 import android.annotation.SuppressLint;
 import android.app.NotificationManager;
@@ -12,6 +12,8 @@ import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 
 import com.google.firebase.messaging.RemoteMessage;
+import com.hr.airpollution.MainActivity;
+import com.hr.airpollution.R;
 
 import org.json.JSONException;
 import org.json.JSONObject;

@@ -1,4 +1,4 @@
-package com.hr.airpollution;
+package com.hr.airpollution.push;
 
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
