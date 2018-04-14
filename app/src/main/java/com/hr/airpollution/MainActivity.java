@@ -179,14 +179,20 @@ public class MainActivity extends AppCompatActivity
                                         JSONObject latestObserver = new JSONObject(jsonArray.get(0).toString());
 
                                         int 미세먼지농도 = Integer.parseInt(latestObserver.get("pm10Value").toString());
-                                        int 미세먼지등급 = Integer.parseInt(latestObserver.get("pm10Grade").toString());
-                                        int 초미세먼지농도 = Integer.parseInt(latestObserver.get("pm25Value").toString());
-                                        int 초미세먼지등급 = Integer.parseInt(latestObserver.get("pm25Grade").toString());
+                                        int 미세먼지등급;
+                                        if(latestObserver.get("pm10Grade").toString().equals("")) {
+                                            미세먼지등급 = Integer.parseInt(latestObserver.get("pm10Grade1h").toString());
+                                        } else {
+                                            미세먼지등급 = Integer.parseInt(latestObserver.get("pm10Grade").toString());
+                                        }
+
+//                                        int 초미세먼지농도 = Integer.parseInt(latestObserver.get("pm25Value").toString());
+//                                        int 초미세먼지등급 = Integer.parseInt(latestObserver.get("pm25Grade").toString());
 
                                         System.out.println("가장 최근 미세먼지농도: " + 미세먼지농도);
                                         System.out.println("가장 최근 미세먼지등급: " + 미세먼지등급);
-                                        System.out.println("가장 최근 초미세먼지농도: " + 초미세먼지농도);
-                                        System.out.println("가장 최근 초미세먼지등급: " + 초미세먼지등급);
+//                                        System.out.println("가장 최근 초미세먼지농도: " + 초미세먼지농도);
+//                                        System.out.println("가장 최근 초미세먼지등급: " + 초미세먼지등급);
 
                                         result = "";
                                         switch (미세먼지등급) {

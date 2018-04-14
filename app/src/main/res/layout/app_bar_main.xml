@@ -4,15 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1decec"
     tools:context=".MainActivity">
 
     <include
         layout="@layout/content_main"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        />
+        android:layout_height="match_parent" />
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -30,7 +27,6 @@
             app:popupTheme="@style/AppTheme.PopupOverlay"
             android:fitsSystemWindows="true"
             app:title=" "
-            app:layout_scrollFlags="scroll|snap"
             />
 
     </android.support.design.widget.AppBarLayout>
