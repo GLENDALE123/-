@@ -10,14 +10,19 @@ import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -39,6 +44,8 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -53,11 +60,18 @@ public class MainActivity extends AppCompatActivity
     private boolean isAccessFineLocation = false;
     private boolean isAccessCoarseLocation = false;
     private boolean isPermission = false;
+    private ViewPager mViewPager;
 
     // GPSTracker class
     private GPSUtil gps;
 
-    TextView poultt;
+    private TextView poultt;
+    private LinearLayout indicator;
+    private int mDotCount;
+    private LinearLayout[] mDots;
+    private ViewPager mviewPager;
+    private List<String> listItem = new ArrayList<>();
+    private viewPagerAdepter mfragmentAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,10 +79,17 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        indicator = (LinearLayout) findViewById(R.id.viewpagerindicator);
+        mviewPager = (ViewPager) findViewById(R.id.pager);
+        setData();
+        //////////////////////////////상태바없애기//////////////////////////
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             Window w = getWindow(); // in Activity's onCreate() for instance
             w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         }
+        /////////////////////////////////////////////
+        NestedScrollView scrollView = (NestedScrollView) findViewById(R.id.nested);
+        scrollView.setFillViewport(true);
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -79,7 +100,6 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        poultt = findViewById(R.id.poultt);
 
         ////////// GPS 관련 ////////////////////
         if (!isPermission) {
@@ -115,7 +135,7 @@ public class MainActivity extends AppCompatActivity
         ////////////////////////
 
         ////// 푸시 관련 ///////
-        getPush();
+//        getPush();
         ////////////////////////
     }
 
@@ -180,7 +200,7 @@ public class MainActivity extends AppCompatActivity
 
                                         int 미세먼지농도 = Integer.parseInt(latestObserver.get("pm10Value").toString());
                                         int 미세먼지등급;
-                                        if(latestObserver.get("pm10Grade").toString().equals("")) {
+                                        if (latestObserver.get("pm10Grade").toString().equals("")) {
                                             미세먼지등급 = Integer.parseInt(latestObserver.get("pm10Grade1h").toString());
                                         } else {
                                             미세먼지등급 = Integer.parseInt(latestObserver.get("pm10Grade").toString());
@@ -395,6 +415,59 @@ public class MainActivity extends AppCompatActivity
                     poultt.setText(msg.obj.toString());
                     break;
             }
+        }
+    }
+
+    private void setData() {
+        listItem.add("Ini adalah fragment 1");
+        listItem.add("Ini adalah fragment 2");
+        listItem.add("Ini adalah fragment 3");
+        listItem.add("Ini adalah fragment 4");
+        listItem.add("Ini adalah fragment 5");
+
+        mfragmentAdapter = new viewPagerAdepter(this, getSupportFragmentManager(), listItem);
+        mviewPager.setAdapter(mfragmentAdapter);
+        mviewPager.setCurrentItem(0);
+        mviewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                for (int i = 0; i < mDotCount; i++) {
+                    mDots[i].setBackgroundResource(R.drawable.viewpager_indicator_nonselcted_item);
+                }
+                mDots[position].setBackgroundResource(R.drawable.viewpager_indicator_selcted_item);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+        setUiPageViewController();
+
+    }
+
+    private void setUiPageViewController() {
+
+        mDotCount = mfragmentAdapter.getCount();
+        mDots = new LinearLayout[mDotCount];
+
+        for (int i = 0; i < mDotCount; i++) {
+            mDots[i] = new LinearLayout(this);
+            mDots[i].setBackgroundResource(R.drawable.viewpager_indicator_nonselcted_item);
+
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    LinearLayoutCompat.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+
+            params.setMargins(4, 0, 4, 0);
+            indicator.addView(mDots[i], params);
+            mDots[0].setBackgroundResource(R.drawable.viewpager_indicator_selcted_item);
         }
     }
 }

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/vrb_bg"
+    tools:context=".mainViewPagerFragments">
+
+    <!--미세먼지 표정아이콘-->
+    <ImageView
+        android:id="@+id/poulic"
+        android:layout_width="match_parent"
+        android:layout_height="130dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="260dp"
+        android:src="@drawable/verybed_lc"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!--오염 텍스트-->
+    <TextView
+        android:id="@+id/poultt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/bold_ft"
+        android:gravity="center"
+        android:layout_marginTop="10dp"
+        android:text="좋 음"
+        android:textColor="#333333"
+        android:textSize="30sp"
+        app:layout_constraintTop_toBottomOf="@id/poulic" />
+
+
+</android.support.constraint.ConstraintLayout>
