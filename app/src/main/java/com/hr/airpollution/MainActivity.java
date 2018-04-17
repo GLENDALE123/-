@@ -2,6 +2,7 @@ package com.hr.airpollution;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
@@ -39,13 +41,22 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -60,28 +71,42 @@ public class MainActivity extends AppCompatActivity
     private boolean isAccessFineLocation = false;
     private boolean isAccessCoarseLocation = false;
     private boolean isPermission = false;
-    private ViewPager mViewPager;
 
     // GPSTracker class
     private GPSUtil gps;
-
-    private TextView poultt;
     private LinearLayout indicator;
     private int mDotCount;
     private LinearLayout[] mDots;
     private ViewPager mviewPager;
-    private List<String> listItem = new ArrayList<>();
+    private List<JSONObject> listItem = new ArrayList<>();
     private viewPagerAdepter mfragmentAdapter;
+    String saveFileName = "airpollution_data.json";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (!(fileExist(saveFileName))) { // 저장 데이터가 없을 경우 만들어준다. (초기 1회 실행)
+            // saveSpotList = JSONArray.   spot 정보에 관한 JSONObject를 담아둔다.
+            String content = "{" +
+                    "\"saveSpotList\" : [] " +
+                    "}";
+
+            FileOutputStream outputStream;
+            try {
+                outputStream = openFileOutput(saveFileName, Context.MODE_PRIVATE);
+                outputStream.write(content.getBytes());
+                outputStream.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         indicator = (LinearLayout) findViewById(R.id.viewpagerindicator);
         mviewPager = (ViewPager) findViewById(R.id.pager);
-        setData();
         //////////////////////////////상태바없애기//////////////////////////
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             Window w = getWindow(); // in Activity's onCreate() for instance
@@ -124,10 +149,8 @@ public class MainActivity extends AppCompatActivity
              * 1. 가장 가까운 측정소 가져오는 API를 실행한다.
              * 2. 1번을 기반으로 측정소에서 미세먼지 농도 측정한 결과를 가져온다.
              */
-            getLatestObserve(tm_pt.getX(), tm_pt.getY());
-
             String address = AddressUtil.getAddress(getApplicationContext(), latitude, longitude);
-            Toast.makeText(getApplicationContext(), address, Toast.LENGTH_LONG).show();
+            getLatestObserve(address, tm_pt.getX(), tm_pt.getY());
         } else {
             // GPS 를 사용할수 없으므로
             gps.showSettingsAlert();
@@ -174,7 +197,7 @@ public class MainActivity extends AppCompatActivity
      * 1. 가장 가까운 측정소 가져오는 API를 실행한다.
      * 2. 1번을 기반으로 측정소에서 미세먼지 농도 측정한 결과를 가져온다.
      */
-    private void getLatestObserve(final double tmX, final double tmY) {
+    private void getLatestObserve(final String address, final double tmX, final double tmY) {
         new Thread() { // 1번
             public void run() {
                 try {
@@ -229,12 +252,25 @@ public class MainActivity extends AppCompatActivity
                                                 result = "매 우 나 쁨";
                                                 break;
                                         }
-//                                        Message message = uiHandler.obtainMessage();
-//                                        message.what = 1; // 후처리 번호
-//                                        message.obj = result; // 전달할 데이터
-//                                        uiHandler.sendMessage(message);
+                                        Date yourDate = new Date();
 
+                                        SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("업데이트 MM/dd a hh:mm", Locale.KOREA);
+                                        String date = DATE_FORMAT.format(yourDate);
+                                        System.out.println(date);
+
+                                        JSONObject currentLocationInfo = new JSONObject();
+                                        currentLocationInfo.put("text", result);
+                                        currentLocationInfo.put("grade", 미세먼지등급);
+                                        currentLocationInfo.put("address", address);
+                                        currentLocationInfo.put("currentDateTimeString", date);
+
+                                        Message message = uiHandler.obtainMessage();
+                                        message.what = 1; // 후처리 번호
+                                        message.obj = currentLocationInfo; // 전달할 데이터
+                                        uiHandler.sendMessage(message);
                                         //GRADE 값 : 1 좋음 / 2 보통 / 3 나쁨 / 4 매우나쁨
+
+                                        //주소, //업데이트 시간, //미세먼지등급텍스트, //미세먼지등급이모티콘
                                     } catch (JSONException e) {
                                         e.printStackTrace();
                                     }
@@ -398,32 +434,67 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-//    private final UIHandler uiHandler = new UIHandler();
-//
-//    @SuppressLint("HandlerLeak")
-//    private class UIHandler extends Handler {
-//
-//        UIHandler() {
-//        }
-//
-//        @Override
-//        public void handleMessage(Message msg) {
-//            // 전달받은 what(후처리 번호), obj(데이터)를 토대로 UI 작업을 한다.
-//
-//            switch (msg.what) { // what ID 값에 따른 UI 후처리
-//                case 1: // getObserve(tmX, tmY)
-//                    poultt.setText(msg.obj.toString());
-//                    break;
-//            }
-//        }
-//    }
+    private final UIHandler uiHandler = new UIHandler();
 
-    private void setData() {
-        listItem.add("Ini adalah fragment 1");
-        listItem.add("Ini adalah fragment 2");
-        listItem.add("Ini adalah fragment 3");
-        listItem.add("Ini adalah fragment 4");
-        listItem.add("Ini adalah fragment 5");
+    @SuppressLint("HandlerLeak")
+    private class UIHandler extends Handler {
+
+        UIHandler() {
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            // 전달받은 what(후처리 번호), obj(데이터)를 토대로 UI 작업을 한다.
+
+            switch (msg.what) { // what ID 값에 따른 UI 후처리
+                case 1: // getObserve(tmX, tmY)
+                    try {
+                        setData((JSONObject) msg.obj); // data binding
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+            }
+        }
+    }
+
+    public boolean fileExist(String fileName) {
+        File file = getBaseContext().getFileStreamPath(fileName);
+        return file.exists();
+    }
+
+    private void setData(final JSONObject currentLocationInfo) throws IOException {
+        listItem.add(currentLocationInfo);
+
+        FileInputStream fileInputStream = this.openFileInput(saveFileName);
+        byte[] buffer = new byte[1024];
+        StringBuilder sb = new StringBuilder();
+        int len = 0;
+        while ((len = fileInputStream.read(buffer)) > 0) {
+            sb.append(new String(buffer, 0, len));
+        }
+        fileInputStream.close();
+        JSONObject jsonObject = null;
+        JSONArray spotList;
+        try {
+            jsonObject = new JSONObject(String.valueOf(sb));
+            spotList = new JSONArray(jsonObject.get("saveSpotList").toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+        try {
+            System.out.println("읽어온 데이터:" + jsonObject.get("saveSpotList").toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JSONObject file = new JSONObject();
+//        currentLocationInfo.put("text", result);
+//        currentLocationInfo.put("grade", 미세먼지등급);
+//        currentLocationInfo.put("address", address);
+//        currentLocationInfo.put("currentDateTimeString", date);
 
         mfragmentAdapter = new viewPagerAdepter(this, getSupportFragmentManager(), listItem);
         mviewPager.setAdapter(mfragmentAdapter);

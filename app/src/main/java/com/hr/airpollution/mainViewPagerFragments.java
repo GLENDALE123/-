@@ -9,6 +9,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +19,11 @@ public class mainViewPagerFragments extends Fragment {
     private TextView mtextview;
     private ImageView mimageview;
     List<Integer> list;
+    JSONObject tempJSONObject;
+
+    public mainViewPagerFragments(JSONObject tempJSONObject) {
+        this.tempJSONObject = tempJSONObject;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -28,5 +36,12 @@ public class mainViewPagerFragments extends Fragment {
 
         mtextview = (TextView) view.findViewById(R.id.poultt);
         mimageview = (ImageView) view.findViewById(R.id.poulic);
+
+
+        try {
+            mtextview.setText(tempJSONObject.get("text").toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }
