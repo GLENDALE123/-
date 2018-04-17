@@ -229,10 +229,10 @@ public class MainActivity extends AppCompatActivity
                                                 result = "매 우 나 쁨";
                                                 break;
                                         }
-                                        Message message = uiHandler.obtainMessage();
-                                        message.what = 1; // 후처리 번호
-                                        message.obj = result; // 전달할 데이터
-                                        uiHandler.sendMessage(message);
+//                                        Message message = uiHandler.obtainMessage();
+//                                        message.what = 1; // 후처리 번호
+//                                        message.obj = result; // 전달할 데이터
+//                                        uiHandler.sendMessage(message);
 
                                         //GRADE 값 : 1 좋음 / 2 보통 / 3 나쁨 / 4 매우나쁨
                                     } catch (JSONException e) {
@@ -398,25 +398,25 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private final UIHandler uiHandler = new UIHandler();
-
-    @SuppressLint("HandlerLeak")
-    private class UIHandler extends Handler {
-
-        UIHandler() {
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            // 전달받은 what(후처리 번호), obj(데이터)를 토대로 UI 작업을 한다.
-
-            switch (msg.what) { // what ID 값에 따른 UI 후처리
-                case 1: // getObserve(tmX, tmY)
-                    poultt.setText(msg.obj.toString());
-                    break;
-            }
-        }
-    }
+//    private final UIHandler uiHandler = new UIHandler();
+//
+//    @SuppressLint("HandlerLeak")
+//    private class UIHandler extends Handler {
+//
+//        UIHandler() {
+//        }
+//
+//        @Override
+//        public void handleMessage(Message msg) {
+//            // 전달받은 what(후처리 번호), obj(데이터)를 토대로 UI 작업을 한다.
+//
+//            switch (msg.what) { // what ID 값에 따른 UI 후처리
+//                case 1: // getObserve(tmX, tmY)
+//                    poultt.setText(msg.obj.toString());
+//                    break;
+//            }
+//        }
+//    }
 
     private void setData() {
         listItem.add("Ini adalah fragment 1");

@@ -28,17 +28,5 @@ public class mainViewPagerFragments extends Fragment {
 
         mtextview = (TextView) view.findViewById(R.id.poultt);
         mimageview = (ImageView) view.findViewById(R.id.poulic);
-        list = new ArrayList<>();
-        list.add(R.id.poultt);
-        list.add(R.id.poulic);
-    }
-
-    public String getDetail() {
-        return detail;
-    }
-
-    public void setDetail(String detail) {
-
-
     }
 }

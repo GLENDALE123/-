@@ -26,7 +26,6 @@ public class viewPagerAdepter extends FragmentStatePagerAdapter {
 
 
         mainViewPagerFragments mvpfragments = new mainViewPagerFragments();
-        mvpfragments.setDetail(items);
         fragment = mvpfragments;
 
         if (fragments[position] == null) {
