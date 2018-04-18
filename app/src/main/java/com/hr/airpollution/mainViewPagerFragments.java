@@ -2,6 +2,7 @@ package com.hr.airpollution;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
@@ -24,7 +25,6 @@ public class mainViewPagerFragments extends Fragment {
     private TextView timeTextView;
     private ImageView mimageview;
     private ConstraintLayout container;
-    List<Integer> list;
     JSONObject tempJSONObject;
 
     public mainViewPagerFragments(JSONObject tempJSONObject) {
@@ -32,12 +32,12 @@ public class mainViewPagerFragments extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_mainviewpager, container, false);
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         mtextview = (TextView) view.findViewById(R.id.poultt);
