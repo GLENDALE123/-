@@ -5,33 +5,81 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/vrb_bg"
+    android:background="@drawable/verygood_bg"
     tools:context=".mainViewPagerFragments">
+    <!--둥근네모 배경-->
+    <ImageView
+        android:id="@+id/poulic_bg"
+        android:layout_width="350dp"
+        android:layout_height="350dp"
+        android:fitsSystemWindows="true"
+        android:scaleType="fitXY"
+        android:src="@drawable/rounded_rectangle"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.6" />
 
+    <TextView
+        android:id="@+id/adress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:fontFamily="@font/bold_ft"
+        android:gravity="center"
+        android:text="장안구 정자1동"
+        android:textSize="35sp"
+        android:textColor="#333333"
+        app:layout_constraintLeft_toLeftOf="@id/poulic_bg"
+        app:layout_constraintRight_toRightOf="@id/poulic_bg"
+        app:layout_constraintTop_toTopOf="@id/poulic_bg" />
+
+    <TextView
+        android:id="@+id/updatetime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/basic_ft"
+        android:gravity="center"
+        android:layout_marginTop="10dp"
+        android:textStyle="bold"
+        android:text="업데이트 4/11 오후 5:32"
+        android:textColor="#565656"
+        android:textSize="15sp"
+        app:layout_constraintTop_toBottomOf="@id/adress" />
     <!--미세먼지 표정아이콘-->
     <ImageView
         android:id="@+id/poulic"
         android:layout_width="match_parent"
-        android:layout_height="130dp"
+        android:layout_height="190dp"
         android:layout_gravity="center"
-        android:layout_marginTop="260dp"
-        android:src="@drawable/verybed_lc"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_marginTop="100dp"
+        android:src="@drawable/verygood_ic"
+        app:layout_constraintLeft_toLeftOf="@id/poulic_bg"
+        app:layout_constraintRight_toRightOf="@id/poulic_bg"
+        app:layout_constraintTop_toTopOf="@id/poulic_bg" />
 
     <!--오염 텍스트-->
     <TextView
         android:id="@+id/poultt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
         android:fontFamily="@font/bold_ft"
         android:gravity="center"
-        android:layout_marginTop="10dp"
         android:text="좋 음"
         android:textColor="#333333"
-        android:textSize="30sp"
+        android:textSize="35sp"
         app:layout_constraintTop_toBottomOf="@id/poulic" />
+    <!--하단배경-->
+    <ImageView
+        android:id="@+id/allairpoul"
+        android:layout_width="match_parent"
+        android:layout_height="115dp"
+        android:layout_marginBottom="15dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/allairpoul_bg"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 
 </android.support.constraint.ConstraintLayout>
