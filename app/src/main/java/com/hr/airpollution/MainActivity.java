@@ -87,21 +87,27 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (!(fileExist(saveFileName))) { // 저장 데이터가 없을 경우 만들어준다. (초기 1회 실행)
-            // saveSpotList = JSONArray.   spot 정보에 관한 JSONObject를 담아둔다.
-            String content = "{" +
-                    "\"saveSpotList\" : [] " +
-                    "}";
+//        if (!(fileExist(saveFileName))) { // 저장 데이터가 없을 경우 만들어준다. (초기 1회 실행)
+        // saveSpotList = JSONArray.   spot 정보에 관한 JSONObject를 담아둔다.
 
-            FileOutputStream outputStream;
-            try {
-                outputStream = openFileOutput(saveFileName, Context.MODE_PRIVATE);
-                outputStream.write(content.getBytes());
-                outputStream.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        String content = "{" +
+                "\"saveSpotList\" : [{" +
+                "\"text\": \"나 쁨\"," +
+                "\"grade\": \"3\"," +
+                "\"address\": \"장안구 정자2동\"," +
+                "\"currentDateTimeString\": \"업데이트 04/18 오후 05:58\"" +
+                "}] " +
+                "}";
+
+        FileOutputStream outputStream;
+        try {
+            outputStream = openFileOutput(saveFileName, Context.MODE_PRIVATE);
+            outputStream.write(content.getBytes());
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+//        }
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -238,7 +244,7 @@ public class MainActivity extends AppCompatActivity
                                                 result = "좋 음";
                                                 break;
                                             case 2:
-                                                result = " 보 통";
+                                                result = "보 통";
                                                 break;
                                             case 3:
                                                 result = "나 쁨";
@@ -254,8 +260,6 @@ public class MainActivity extends AppCompatActivity
                                         System.out.println(date);
 
                                         JSONObject currentLocationInfo = new JSONObject();
-                                        currentLocationInfo.put("text", result);
-                                        currentLocationInfo.put("grade", 미세먼지등급);
                                         int addressLatestIndex;
                                         String finalAddress;
                                         if (address.contains("동 ")) {
@@ -271,6 +275,16 @@ public class MainActivity extends AppCompatActivity
                                             finalAddress = address;
                                         }
 
+                                        if (finalAddress.contains("시 ")) {
+                                            addressLatestIndex = finalAddress.indexOf("시 ");
+                                            finalAddress = finalAddress.substring(addressLatestIndex + 2, finalAddress.length());
+                                        } else if (finalAddress.contains("군 ")) {
+                                            addressLatestIndex = finalAddress.indexOf("구 ");
+                                            finalAddress = finalAddress.substring(addressLatestIndex + 2, finalAddress.length());
+                                        }
+
+                                        currentLocationInfo.put("text", result);
+                                        currentLocationInfo.put("grade", 미세먼지등급);
                                         currentLocationInfo.put("address", finalAddress);
                                         currentLocationInfo.put("currentDateTimeString", date);
 
@@ -484,8 +498,8 @@ public class MainActivity extends AppCompatActivity
             sb.append(new String(buffer, 0, len));
         }
         fileInputStream.close();
-        JSONObject jsonObject = null;
-        JSONArray spotList;
+        JSONObject jsonObject;
+        JSONArray spotList = null;
         try {
             jsonObject = new JSONObject(String.valueOf(sb));
             spotList = new JSONArray(jsonObject.get("saveSpotList").toString());
@@ -493,18 +507,13 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
         }
 
-
-        try {
-            System.out.println("읽어온 데이터:" + jsonObject.get("saveSpotList").toString());
-        } catch (JSONException e) {
-            e.printStackTrace();
+        for (int i = 0; i < spotList.length(); i++) {
+            try {
+                listItem.add((JSONObject) spotList.get(i));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
-
-        JSONObject file = new JSONObject();
-//        currentLocationInfo.put("text", result);
-//        currentLocationInfo.put("grade", 미세먼지등급);
-//        currentLocationInfo.put("address", address);
-//        currentLocationInfo.put("currentDateTimeString", date);
 
         mfragmentAdapter = new viewPagerAdepter(this, getSupportFragmentManager(), listItem);
         mviewPager.setAdapter(mfragmentAdapter);
