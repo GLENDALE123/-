@@ -256,7 +256,22 @@ public class MainActivity extends AppCompatActivity
                                         JSONObject currentLocationInfo = new JSONObject();
                                         currentLocationInfo.put("text", result);
                                         currentLocationInfo.put("grade", 미세먼지등급);
-                                        currentLocationInfo.put("address", address);
+                                        int addressLatestIndex;
+                                        String finalAddress;
+                                        if (address.contains("동 ")) {
+                                            addressLatestIndex = address.indexOf("동 ");
+                                            finalAddress = address.substring(5, addressLatestIndex + 2);
+                                        } else if (address.contains("읍 ")) {
+                                            addressLatestIndex = address.indexOf("읍 ");
+                                            finalAddress = address.substring(5, addressLatestIndex + 2);
+                                        } else if (address.contains("면 ")) {
+                                            addressLatestIndex = address.indexOf("면 ");
+                                            finalAddress = address.substring(5, addressLatestIndex + 2);
+                                        } else {
+                                            finalAddress = address;
+                                        }
+
+                                        currentLocationInfo.put("address", finalAddress);
                                         currentLocationInfo.put("currentDateTimeString", date);
 
                                         Message message = uiHandler.obtainMessage();
