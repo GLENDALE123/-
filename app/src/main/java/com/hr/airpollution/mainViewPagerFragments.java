@@ -37,8 +37,8 @@ public class mainViewPagerFragments extends Fragment {
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+        public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+            super.onViewCreated(view, savedInstanceState);
 
         mtextview = (TextView) view.findViewById(R.id.poultt);
         mimageview = (ImageView) view.findViewById(R.id.poulic);
