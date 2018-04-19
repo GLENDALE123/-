@@ -264,11 +264,11 @@ public class MainActivity extends AppCompatActivity
                                         if (address.contains("동 ")) {
                                             addressLatestIndex = address.indexOf("동 ");
                                             finalAddress = address.substring(5, addressLatestIndex + 2);
-                                        } else if (address.contains("읍 ")) {
-                                            addressLatestIndex = address.indexOf("읍 ");
-                                            finalAddress = address.substring(5, addressLatestIndex + 2);
                                         } else if (address.contains("면 ")) {
                                             addressLatestIndex = address.indexOf("면 ");
+                                            finalAddress = address.substring(5, addressLatestIndex + 2);
+                                        } else if (address.contains("읍 ")) {
+                                            addressLatestIndex = address.indexOf("읍 ");
                                             finalAddress = address.substring(5, addressLatestIndex + 2);
                                         } else {
                                             finalAddress = address;
